@@ -1,0 +1,10 @@
+{
+	"Admins": ["kekler", "darthlukan"],
+	"Server": "irc.freenode.net",
+	"Port": "6667",
+	"Channel": ["#kekler"],
+	"BotUser": "bottly",
+	"BotNick": "bottly",
+	"Trigger": ".",
+	"LogDir": "/tmp/bottlog"
+}
