@@ -11,13 +11,16 @@ NICK = data['BotNick']
 TRIGGER = data['Trigger']
 ADMINS = data['Admins']
 
+
 class Bottly(object):
+
 	def __init__(self, server, port, nick, admins, trigger):
 		self.server = server
 		self.port = int(port)
 		self.nick = nick
 		self.admins = admins
 		self.trigger = trigger
+
 	def connect_server(self):
 		self.irc = socket.socket()
 		self.irc.connect((self.server, self.port))
@@ -35,7 +38,7 @@ class Bottly(object):
 
 
 	def register_nick(self):
-		self.send_data('USER ' + self.nick + ' ' + self.nick + ' ' + self.server + ' :' + self.nick)
+		self.send_data('USER {0} {0} {1} {0}'.format(self.nick, self.server))
 		self.send_data('NICK ' + self.nick)
 
 	def send_data(self, data):
@@ -57,10 +60,11 @@ class Bottly(object):
 	def check_input(self, data):
 		if 'ERROR' in data:
 			print('Error, disconnecting')
-		elif 'PRIVMSG' in data[1] or 'JOIN' in data[1] or 'PART' in data[1]:
+		elif data[1] in ['PRIVMSG', 'JOIN', 'PART']:
 			self.command_filter(data)
 		elif data[0] == 'PING':
 			self.pong(data[0])
+
 	def command_filter(self, data):
 		sender = self.get_sender(data[0])
 		channel = data[2]
@@ -94,17 +98,17 @@ class Bottly(object):
 	def get_sender(self, line):
 		sender = ''
 		for char in line:
-			if(char=='!'):
+			if char == '!':
 				break
-			if(char!=':'):
+			if char != ':':
 				sender += str(char)
 		return sender
 
 	def is_admin(self, user_nick):
 		return user_nick in self.admins
 
-	def deny_command(self, channel, sender):	
-		self.send_message(channel, 'Not authed')
+    def deny_command(self, channel, sender):
+        self.send_message(channel, 'Not authed')
 
 if __name__ == '__main__':
 	bot = Bottly(SERVER, PORT, NICK, ADMINS, TRIGGER)
