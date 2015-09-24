@@ -1,5 +1,7 @@
 import json, re, socket, string, sys
 
+from urllib.request import urlopen
+
 with open('config.json') as json_data:
 	data = json.load(json_data)
 
@@ -20,10 +22,15 @@ class Bottly(object):
 		self.nick = nick
 		self.admins = admins
 		self.trigger = trigger
+		self.hushed = False
 
 	def connect_server(self):
 		self.irc = socket.socket()
 		self.irc.connect((self.server, self.port))
+
+	def disconnect_server(self):
+		self.send_data('QUIT :Quit: fuck this shit')
+		self.irc.close()
 
 	def pong(self, target=':Pong'):
 		message = 'PONG %s' % target
@@ -33,7 +40,7 @@ class Bottly(object):
 		self.send_data('JOIN %s' % channel)
 
 	def leave_channel(self, channel, message):
-		self.send_data('PART %s :%s' % (channel, message))
+		self.send_data('PART %s :[...not that anyone cares ]' % channel)
 		print(message)
 
 
@@ -72,29 +79,48 @@ class Bottly(object):
 			command = data[3].lstrip(':')
 		except:
 			command = None
-
-		if self.trigger + 'foo' == command:
-			self.send_message(channel, 'bar')
-		elif self.trigger + 'leave' == command:
-			if sender in self.admins:
-				try:
-					channel = data[4]
-				except IndexError:
-					pass
-				message = '...not that anyone cares'
-				self.leave_channel(channel,message)
-			else:
-				self.deny_command(channel, sender)
-		elif self.trigger + 'join' == command:
-			if sender in self.admins:
-				try:
-					channel = data[4]
-				except IndexError:
-					pass
-				self.join_channel(channel)
-			else:
-				self.deny_command(channel, sender)
-
+		if '#' not in channel:
+			print('privmsg')
+		else:
+			if self.hushed==False:
+				if self.trigger + 'foo' == command:
+					self.send_message(channel, 'bar')
+				elif self.trigger + 'leave' == command:
+					if self.is_admin(sender):
+						try:
+							channel = data[4]
+						except IndexError:
+							pass
+						message = '...not that anyone cares'
+						self.leave_channel(channel, message)
+					else:
+						self.deny_command(channel, sender)
+				elif self.trigger + 'join' == command:
+					if self.is_admin(sender):
+						try:
+							channel = data[4]
+						except IndexError:
+							pass
+						self.join_channel(channel)
+					else:
+						self.deny_command(channel, sender)
+				elif self.trigger + 'quit' == command:
+					self.disconnect_server()
+				elif self.trigger + 'hush' == command:
+					self.send_message(channel, 'Fine... I\'ll be quite!')
+					self.hushed = True
+				elif self.trigger + 'isup' == command:
+					try:
+						state = self.isup(data[4])
+						if state=='UP':
+							self.send_message(channel, 'It\'s just you! %s appears to be up from here' % data[4])
+						elif state=='DOWN':
+							self.send_message(channel, 'It\'s not just you! %s appears to be down from here to' % data[4])	
+					except IndexError:
+						self.send_message(channel, 'Please provide a URL')
+			if self.trigger + 'unhush' == command and self.is_admin(sender):
+				self.send_message(channel, 'Freedom!!!')
+				self.hushed = False
 	def get_sender(self, line):
 		sender = ''
 		for char in line:
@@ -107,8 +133,16 @@ class Bottly(object):
 	def is_admin(self, user_nick):
 		return user_nick in self.admins
 
-    def deny_command(self, channel, sender):
-        self.send_message(channel, 'Not authed')
+	def isup(self, domain):
+		resp = urlopen('http://www.isup.me/%s' % domain).read()
+		if re.search(str.encode('It\'s just you.'), resp, re.DOTALL):
+			state = 'UP'
+		else:
+			state = 'DOWN'	
+		return state
+
+	def deny_command(self, channel, sender):	
+		self.send_message(channel, 'Not authed')
 
 if __name__ == '__main__':
 	bot = Bottly(SERVER, PORT, NICK, ADMINS, TRIGGER)
@@ -120,4 +154,8 @@ if __name__ == '__main__':
 
 	while 1:
 		data = bot.get_data()
+		if len(data) == 0:
+			break
 		bot.check_input(data)
+
+	bot.disconnect_server()
