@@ -2,6 +2,8 @@ import json, re, socket, string, sys, time, datetime
 import requests
 from urllib.request import urlopen
 
+import sqlite3
+
 with open('config.json') as json_data:
 	data = json.load(json_data)
 
@@ -82,6 +84,25 @@ class Bottly(object):
 		resp = urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
 		self.send_message(channel, resp)
 
+	def tell(self, reciever, message):
+		db = sqlite3.connect('database')
+		cursor = db.cursor()
+		cursor.execute('''INSERT INTO tells(reciever, message)
+				VALUES(?,?)''', (reciever, message)
+		db.commit()
+		db.close()
+	def checkmail(self, channel, reciever):
+		db = sqlite3.connect('database')
+		cursor = db.cursor()
+		cursor.execute('''SELECT reciever, message''')
+		all_rows = cursor.fetchall()
+		for row in all_rows:
+			if reciever in row[0]:
+				self.send_message(channel, row[0] + ': ' + row[1])
+		cursor.execute('''DELETE FROM tells WHERE reciever = ?''', (reciever,)
+		db.commit()
+		db.close()
+
 	def command_filter(self, data):
 		sender = self.get_sender(data[0])
 		channel = data[2]
@@ -93,12 +114,18 @@ class Bottly(object):
 			print('privmsg')
 		else:
 			if self.hushed==False:
+				if self.trigger + 'checkmail' == command:
+					self.checkmail(channel,sender)	
 				if self.trigger + 'tiny' == command:
 					try:
 						url = data[4]
 						self.tinyurl(channel,url)
 					except:
 						self.send_message(channel, 'Please provide a URL')
+				if self.trigger + 'tell' == command:
+					reciever = data[4]
+					message = data[5:]
+					self.tell(reciever, message)
 				if self.trigger + 'uptime' == command:
 					uptime = self.uptime(self.start_time)
 					self.send_message(channel, 'Uptime: %s' % uptime)

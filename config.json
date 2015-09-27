@@ -5,6 +5,6 @@
 	"Channel": ["#kekler"],
 	"BotUser": "bottly",
 	"BotNick": "bottly",
-	"Trigger": ".",
+	"Trigger": "?",
 	"LogDir": "/tmp/bottlog"
 }
