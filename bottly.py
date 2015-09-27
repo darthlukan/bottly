@@ -82,17 +82,6 @@ class Bottly(object):
 		resp = urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
 		self.send_message(channel, resp)
 
-	def geoip(self, channel, ip):
-		loc_data = requests.get('http://www.telize.com/geoip?ip=' + ip).json()
-		country = loc_data['country']
-		region = loc_data['region']
-		city = loc_data['city']
-		timezone = loc_data['timezone']
-		ip = loc_data['ip']
-		self.send_message(channel, 'IP: ' + ip)
-		self.send_message(channel, 'Location: {0}, {1} {2}'.format(city, region, country))
-		self.send_message(channel, 'Timezone: ' + timezone)
-
 	def command_filter(self, data):
 		sender = self.get_sender(data[0])
 		channel = data[2]
@@ -104,11 +93,12 @@ class Bottly(object):
 			print('privmsg')
 		else:
 			if self.hushed==False:
-				if self.trigger + 'geoip' == command:
-					self.geoip(channel,data[4])
 				if self.trigger + 'tiny' == command:
-					url = data[4]
-					self.tinyurl(channel,url)
+					try:
+						url = data[4]
+						self.tinyurl(channel,url)
+					except:
+						self.send_message(channel, 'Please provide a URL')
 				if self.trigger + 'uptime' == command:
 					uptime = self.uptime(self.start_time)
 					self.send_message(channel, 'Uptime: %s' % uptime)
