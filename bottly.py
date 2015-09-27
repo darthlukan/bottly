@@ -105,13 +105,13 @@ class Bottly(object):
 
     def command_filter(self, data):
         sender = self.get_sender(data[0])
-        channel = str(data[2])
+        channel = data[2]
         try:
             command = data[3].lstrip(':')
         except:
             command = ''
         if '#' not in channel:
-            print('privmsg')
+            self.send_message(sender, 'No messaging commands')
         else:
             if self.trigger + 'tinyon' == command:
                 self.autotiny = False
