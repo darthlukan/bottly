@@ -102,12 +102,13 @@ class Bottly(object):
             self.send_message(channel, row[0] + ': ' + row[1] + ' -' + row[2])
         return
 
-    def helpCMD(channel)
-        send_message(channel, '"?tiny <url>" - shortens URL with TinyURL')
-        send_message(channel, '"?isup <url>" - lets you know the status of a website via isup.me')
-        send_message(channel, '"?author" - information about authors')
-        send_message(channel, '"?bug" - information about where to report bottly\'s issues')
+    def helpful(self, channel)
+        self.send_message(channel, '"?tiny <url>" - shortens URL with TinyURL')
+        self.send_message(channel, '"?isup <url>" - lets you know the status of a website via isup.me')
+        self.send_message(channel, '"?author" - information about authors')
+        self.send_message(channel, '"?bug" - information about where to report bottly\'s issues')
       
+
     def command_filter(self, data):
         sender = self.get_sender(data[0])
         channel = data[2]
@@ -125,7 +126,7 @@ class Bottly(object):
             if self.autotiny is False:
                 for item in data:
                     if 'http' in item:
-                        self.tinyurl(channel, item)
+                        self.tinyurl(channel, item.lstrip(':'))
             if self.hushed is False:
                 if self.trigger + 'checkmail' == command:
                     self.checkmail(channel,sender)
@@ -136,10 +137,9 @@ class Bottly(object):
                     except:
                         self.send_message(channel, 'Please provide a URL')
                 if self.trigger + 'help' == command:
-                    self.helpCMD()
+                    self.helpful(channel)
                 if self.trigger + 'bug' == command:
-                    issue_url = self.tinyurl(channel,'https://github.com/kekler/bottly/issues')
-                    send_message(channel, 'To report an issue, visit ' + issue_url)
+                    send_message(channel, 'To report an issue, visit https://github.com/kekler/bottly/issues')
                 if self.trigger + 'tell' == command:
                     reciever = data[4]
                     message = data[5:]
