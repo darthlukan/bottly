@@ -85,7 +85,7 @@ class Bottly(object):
 
     def tinyurl(self, channel, url):
         resp = urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
-        self.send_message(channel, resp)
+        self.send_message(channel, 'Here! I shortened that for you: ' + resp)
 
     def tell(self, reciever, message, sender):
         db = self.db
