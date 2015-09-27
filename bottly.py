@@ -88,12 +88,12 @@ class Bottly(object):
 
     def tell(self, reciever, message):
         db = self.db
-        db.save_tell(db, reciever, message)
+        database.save_tell(db, reciever, message)
         return
 
     def checkmail(self, channel, reciever):
         db = self.db
-        all_rows = db.get_tells(db, reciever)
+        all_rows = database.get_tells(db, reciever)
         for row in all_rows:
             self.send_message(channel, row[0] + ': ' + row[1])
         return
