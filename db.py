@@ -7,12 +7,12 @@ def connect():
 
 def init_db(db):
     cursor = db.cursor()
-    cursor.execute('CREATE TABLE IF NOT EXISTS tells(receiver, message)')
+    cursor.execute('CREATE TABLE IF NOT EXISTS tells(receiver, message, sender)')
 
-def save_tell(db, receiver, message):
+def save_tell(db, receiver, message, sender):
     cursor = db.cursor()
-    cursor.execute('INSERT INTO tells(receiver, message) VALUES(?,?)',
-                    (receiver, message))
+    cursor.execute('INSERT INTO tells(receiver, message, sender) VALUES(?,?,?)',
+                    (receiver, message, sender))
     db.commit()
     return
 
@@ -27,7 +27,7 @@ def delete_tells(db, receiver):
 def get_tells(db, receiver):
     '''Returns a list of rows representing "tells"'''
     cursor = db.cursor()
-    rows = cursor.execute('SELECT receiver, message FROM tells').fetchall()
+    rows = cursor.execute('SELECT receiver, message, sender FROM tells').fetchall()
     tells = [row for row in rows if receiver in row[0]]
     delete_tells(db, receiver)
     return tells

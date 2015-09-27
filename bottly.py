@@ -26,6 +26,7 @@ class Bottly(object):
         self.admins = admins
         self.trigger = trigger
         self.hushed = False
+        self.autotiny = False
         self.start_time = time.time()
         self.db = database.connect()
 
@@ -86,32 +87,40 @@ class Bottly(object):
         resp = urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
         self.send_message(channel, resp)
 
-    def tell(self, reciever, message):
+    def tell(self, reciever, message, sender):
         db = self.db
         data = ''
         for word in message:
             data += word
             data += ' '
-        database.save_tell(db, reciever, data)
+        database.save_tell(db, reciever, data, sender)
         return
 
     def checkmail(self, channel, reciever):
         db = self.db
         all_rows = database.get_tells(db, reciever)
         for row in all_rows:
-            self.send_message(channel, row[0] + ': ' + row[1])
+            self.send_message(channel, row[0] + ': ' + row[1] + ' -' + row[2])
         return
 
     def command_filter(self, data):
         sender = self.get_sender(data[0])
-        channel = data[2]
+        channel = str(data[2])
         try:
             command = data[3].lstrip(':')
         except:
-            command = None
+            command = ''
         if '#' not in channel:
             print('privmsg')
         else:
+            if self.trigger + 'tinyon' == command:
+                self.autotiny = False
+            if self.trigger + 'tinyoff' == command:
+                self.autotiny = True
+            if self.autotiny is False:
+                for item in data:
+                    if 'http' in item:
+                        self.tinyurl(channel, item)
             if self.hushed is False:
                 if self.trigger + 'checkmail' == command:
                     self.checkmail(channel,sender)
@@ -124,7 +133,7 @@ class Bottly(object):
                 if self.trigger + 'tell' == command:
                     reciever = data[4]
                     message = data[5:]
-                    self.tell(reciever, message)
+                    self.tell(reciever, message, sender)
                 if self.trigger + 'uptime' == command:
                     uptime = self.uptime(self.start_time)
                     self.send_message(channel, 'Uptime: %s' % uptime)
