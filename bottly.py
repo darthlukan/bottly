@@ -1,5 +1,4 @@
 import json, re, socket, string, sys, time, datetime
-import requests
 from urllib.request import urlopen
 
 import db as database
@@ -103,6 +102,12 @@ class Bottly(object):
             self.send_message(channel, row[0] + ': ' + row[1] + ' -' + row[2])
         return
 
+    def helpCMD(channel)
+        send_message(channel, '"?tiny <url>" - shortens URL with TinyURL')
+        send_message(channel, '"?isup <url>" - lets you know the status of a website via isup.me')
+        send_message(channel, '"?author" - information about authors')
+        send_message(channel, '"?bug" - information about where to report bottly\'s issues')
+      
     def command_filter(self, data):
         sender = self.get_sender(data[0])
         channel = data[2]
@@ -130,6 +135,11 @@ class Bottly(object):
                         self.tinyurl(channel,url)
                     except:
                         self.send_message(channel, 'Please provide a URL')
+                if self.trigger + 'help' == command:
+                    self.helpCMD()
+                if self.trigger + 'bug' == command:
+                    issue_url = self.tinyurl(channel,'https://github.com/kekler/bottly/issues')
+                    send_message(channel, 'To report an issue, visit ' + issue_url)
                 if self.trigger + 'tell' == command:
                     reciever = data[4]
                     message = data[5:]
