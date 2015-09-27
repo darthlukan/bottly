@@ -1,6 +1,7 @@
 import sqlite3
 
 
+
 def connect():
     db = sqlite3.connect('database')
     return db
@@ -8,7 +9,7 @@ def connect():
 
 def save_tell(db, reciever, message):
     cursor = db.cursor()
-    cursor.exectute('INSERT INTO tells(reciever, message) VALUES(?,?)',
+    cursor.execute('INSERT INTO tells(reciever, message) VALUES(?,?)',
                     (reciever, message))
     db.commit()
     return
