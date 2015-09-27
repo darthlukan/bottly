@@ -88,7 +88,11 @@ class Bottly(object):
 
     def tell(self, reciever, message):
         db = self.db
-        database.save_tell(db, reciever, message)
+        data = ''
+        for word in message:
+            data += word
+            data += ' '
+        database.save_tell(db, reciever, data)
         return
 
     def checkmail(self, channel, reciever):
