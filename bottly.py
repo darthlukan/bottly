@@ -102,12 +102,12 @@ class Bottly(object):
             self.send_message(channel, row[0] + ': ' + row[1] + ' -' + row[2])
         return
 
-    def helpful(self, channel)
+    def helpful(self, channel):
         self.send_message(channel, '"?tiny <url>" - shortens URL with TinyURL')
         self.send_message(channel, '"?isup <url>" - lets you know the status of a website via isup.me')
         self.send_message(channel, '"?author" - information about authors')
         self.send_message(channel, '"?bug" - information about where to report bottly\'s issues')
-      
+        self.send_message(channel, '"?tell" - leaves a user a message, "?checkmail" - checks your messages')
 
     def command_filter(self, data):
         sender = self.get_sender(data[0])
