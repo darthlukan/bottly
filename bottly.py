@@ -1,5 +1,5 @@
-import json, re, socket, string, sys
-
+import json, re, socket, string, sys, time, datetime
+import requests
 from urllib.request import urlopen
 
 with open('config.json') as json_data:
@@ -23,6 +23,7 @@ class Bottly(object):
 		self.admins = admins
 		self.trigger = trigger
 		self.hushed = False
+		self.start_time = time.time()
 
 	def connect_server(self):
 		self.irc = socket.socket()
@@ -40,9 +41,8 @@ class Bottly(object):
 		self.send_data('JOIN %s' % channel)
 
 	def leave_channel(self, channel, message):
-		self.send_data('PART %s :[...not that anyone cares ]' % channel)
+		self.send_data('PART %s :[...not that anyone cares] ' % channel)
 		print(message)
-
 
 	def register_nick(self):
 		self.send_data('USER {0} {0} {1} {0}'.format(self.nick, self.server))
@@ -55,6 +55,12 @@ class Bottly(object):
 	def send_message(self, reciever, message):
 		self.send_data('PRIVMSG ' + reciever + ' :' + message)
 
+	def uptime(self, start_time):
+		end_time = time.time()
+		uptime = end_time - start_time
+		uptime = str(datetime.timedelta(seconds=int(uptime)))
+		return uptime
+	
 	def get_data(self):
 		data = self.irc.recv(4096)
 		decoded_data = []
@@ -72,6 +78,21 @@ class Bottly(object):
 		elif data[0] == 'PING':
 			self.pong(data[0])
 
+	def tinyurl(self, channel, url):
+		resp = urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
+		self.send_message(channel, resp)
+
+	def geoip(self, channel, ip):
+		loc_data = requests.get('http://www.telize.com/geoip?ip=' + ip).json()
+		country = loc_data['country']
+		region = loc_data['region']
+		city = loc_data['city']
+		timezone = loc_data['timezone']
+		ip = loc_data['ip']
+		self.send_message(channel, 'IP: ' + ip)
+		self.send_message(channel, 'Location: {0}, {1} {2}'.format(city, region, country))
+		self.send_message(channel, 'Timezone: ' + timezone)
+
 	def command_filter(self, data):
 		sender = self.get_sender(data[0])
 		channel = data[2]
@@ -83,6 +104,17 @@ class Bottly(object):
 			print('privmsg')
 		else:
 			if self.hushed==False:
+				if self.trigger + 'geoip' == command:
+					self.geoip(channel,data[4])
+				if self.trigger + 'tiny' == command:
+					url = data[4]
+					self.tinyurl(channel,url)
+				if self.trigger + 'uptime' == command:
+					uptime = self.uptime(self.start_time)
+					self.send_message(channel, 'Uptime: %s' % uptime)
+				if self.trigger + 'author' == command:
+					self.send_message(channel, 'kekler - owner and core code')
+					self.send_message(channel, 'darthlukan - minor code cleanup/advice and ideas')
 				if self.trigger + 'foo' == command:
 					self.send_message(channel, 'bar')
 				elif self.trigger + 'leave' == command:
