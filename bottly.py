@@ -111,6 +111,8 @@ class Bottly(object):
                 self.tell(row[0], row[1], row[2])
         if len(all_rows) > 4:
             self.send_message(channel, 'You have additional mail waiting...')
+        elif not len(all_rows):
+            self.send_message(channel, 'You have no new messages')
         return
 
     def helpful(self, channel):
