@@ -3,8 +3,8 @@
 	"Server": "irc.freenode.net",
 	"Port": "6667",
 	"Channel": ["#kekler"],
-	"BotUser": "bottly",
-	"BotNick": "bottly",
+	"BotUser": "kekbot",
+	"BotNick": "kekbot",
 	"Trigger": "?",
 	"LogDir": "/tmp/bottlog"
 }

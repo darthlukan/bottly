@@ -83,23 +83,32 @@ class Bottly(object):
             self.pong(data[0])
 
     def tinyurl(self, channel, url):
-        resp = urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
-        self.send_message(channel, 'Here! I shortened that for you: ' + resp)
+        return urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
+
 
     def tell(self, reciever, message, sender):
         db = self.db
         data = ''
-        for word in message:
-            data += word
-            data += ' '
+        if not isinstance(message, str):
+            for word in message:
+                data += word
+                data += ' '
+        else:
+            data = message
         database.save_tell(db, reciever, data, sender)
         return
 
     def checkmail(self, channel, reciever):
         db = self.db
         all_rows = database.get_tells(db, reciever)
+        print(all_rows)
+        x = 0
         for row in all_rows:
-            self.send_message(channel, row[0] + ': ' + row[1] + ' -' + row[2])
+            if x < 4:
+                x += 1
+                self.send_message(channel, row[0] + ': ' + row[1] + ' -' + row[2])
+            else:
+                self.tell(row[0], row[1], row[2])
         return
 
     def helpful(self, channel):
@@ -126,24 +135,28 @@ class Bottly(object):
             if self.autotiny is False:
                 for item in data:
                     if 'http' in item:
-                        self.tinyurl(channel, item.lstrip(':'))
+                        resp = self.tinyurl(channel, item.lstrip(':'))
+                        if len(resp) < len(item):
+                            self.send_message(channel, 'Here! I shortened that for you: ' + resp)
+            
+            if self.trigger + 'tell' == command:
+                reciever = data[4]
+                message = data[5:]
+                self.tell(reciever, message, sender)
             if self.hushed is False:
                 if self.trigger + 'checkmail' == command:
                     self.checkmail(channel,sender)
                 if self.trigger + 'tiny' == command:
                     try:
                         url = data[4]
-                        self.tinyurl(channel,url)
+                        resp = self.tinyurl(channel,url)
+                        self.send_message(channel, 'Here! I shortened that for you: ' + resp)
                     except:
                         self.send_message(channel, 'Please provide a URL')
                 if self.trigger + 'help' == command:
                     self.helpful(channel)
                 if self.trigger + 'bug' == command:
                     send_message(channel, 'To report an issue, visit https://github.com/kekler/bottly/issues')
-                if self.trigger + 'tell' == command:
-                    reciever = data[4]
-                    message = data[5:]
-                    self.tell(reciever, message, sender)
                 if self.trigger + 'uptime' == command:
                     uptime = self.uptime(self.start_time)
                     self.send_message(channel, 'Uptime: %s' % uptime)
