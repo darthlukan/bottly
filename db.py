@@ -32,3 +32,9 @@ def get_tells(db, receiver):
     delete_tells(db, receiver)
     return tells
 
+def save_gamer(db, receiver, message):
+    cursor = db.cursor()
+    cursor.execute('INSERT INTO gamer(sender, message) VALUES(?,?)',
+                    (receiver, message))
+    db.commit()
+    return
