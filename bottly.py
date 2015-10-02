@@ -83,8 +83,10 @@ class Bottly(object):
             self.pong(data[0])
 
     def tinyurl(self, channel, url):
-        return urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
-
+        try:
+            return urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
+        except:
+            self.send_message(channel, 'Oops! Something went wrong with TinyURL')
 
     def tell(self, reciever, message, sender):
         db = self.db
