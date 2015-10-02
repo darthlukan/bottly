@@ -140,9 +140,11 @@ class Bottly(object):
                 for item in data:
                     if 'http' in item:
                         resp = self.tinyurl(channel, item.lstrip(':'))
-                        if len(resp) < len(item):
-                            self.send_message(channel, 'Here! I shortened that for you: ' + resp)
-            
+                        try:
+                            if len(resp) < len(item):
+                                self.send_message(channel, 'Here! I shortened that for you: ' + resp)
+                        except:
+                            print('error')     
             if self.trigger + 'tell' == command:
                 reciever = data[4]
                 message = data[5:]
