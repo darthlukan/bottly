@@ -116,8 +116,7 @@ class Bottly(object):
                 self.tell(row[0], row[1], row[2])
         if len(all_rows) > 4:
             self.send_message(channel, 'You have more love to aquire...')
-        elif not len(all_rows):
-n 
+        elif not len(all_rows): 
             self.send_message(channel, 'No Love for you')
         return
     
