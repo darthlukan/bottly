@@ -130,9 +130,9 @@ class Bottly(object):
             else:
                 self.tell(row[0], row[1], row[2])
         if len(all_rows) > 8:
-            self.send_message(channel, 'You have more love to aquire...')
+            self.send_message(reciever, 'You have more love to aquire...')
         elif not len(all_rows):
-            self.send_message(channel, 'No Love for you')
+            self.send_message(reciever, 'No Love for you')
         return
 
     def helpful(self, channel):
