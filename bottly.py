@@ -75,11 +75,13 @@ class Bottly(object):
         return decoded_data
 
     def check_input(self, data):
-        self.send_data('JOIN %s' % channel)
         if 'ERROR' in data:
             print('Error, disconnecting')
         elif data[1] in ['PRIVMSG', 'JOIN', 'PART']:
             self.command_filter(data)
+        elif data[1] in 'KICK':
+            reconnect_to = data[2]
+            self.join_channel(reconnect_to)
         elif data[0] == 'PING':
             self.pong(data[0])
 
@@ -115,6 +117,7 @@ class Bottly(object):
         if len(all_rows) > 4:
             self.send_message(channel, 'You have more love to aquire...')
         elif not len(all_rows):
+n 
             self.send_message(channel, 'No Love for you')
         return
     
@@ -157,30 +160,28 @@ class Bottly(object):
                 self.autotiny = False
             if self.trigger + 'tinyoff' == command:
                 self.autotiny = True
-            if self.autotiny is False:
-                for item in data:
-                    if 'http' in item:
-                        resp = self.tinyurl(channel, item.lstrip(':'))
-                        try:
-                            if len(resp) < len(item):
-                                self.send_message(channel, 'I dont like them short, but each to their own ...  ' + resp)
-                        except:
-                            print('error')     
             if self.trigger + 'tell' == command:
                 reciever = data[4]
                 message = data[5:]
                 self.tell(reciever, message, sender)
             if self.hushed is False:
-                if self.trigger + 'checkmail' == command:
-                    self.checkmail(channel,sender)
-                if self.trigger + 'tiny' == command:
-                    if self.autotiny is True:
+                if self.autotiny:
+                    for item in data:
+                        if 'http' in item:
+                            resp = self.tinyurl(channel, item.lstrip(':')
+                        try:
+                            if len(resp) < len(item.lstrip(':')
+                                self.send_message(channel, "I don't like them short, but each to their own... %s" % resp)
+                if self.autotiny == False:
+                    if self.trigger + 'tiny' == command:
                         try:
                             url = data[4]
-                            resp = self.tinyurl(channel,url)
-                            self.send_message(channel, 'I dont like them short, but each to their own ... ' + resp)
-                        except:
-                            self.send_message(channel, 'Please provide a URL')
+                            resp = self.tinyurl(channel, url)
+                            self.send_message(channel, "I don't like them short, but each to their own... %s" % resp)
+                        except: 
+                            self.send_message(channel, 'Please provide a valid URL')
+                if self.trigger + 'checkmail' == command:
+                    self.checkmail(channel,sender)
                 if self.trigger + 'help' == command:
                     self.helpful(channel)
                 if self.trigger + 'bug' == command:
