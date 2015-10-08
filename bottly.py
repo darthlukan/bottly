@@ -75,6 +75,7 @@ class Bottly(object):
         return decoded_data
 
     def check_input(self, data):
+        self.send_data('JOIN %s' % channel)
         if 'ERROR' in data:
             print('Error, disconnecting')
         elif data[1] in ['PRIVMSG', 'JOIN', 'PART']:
@@ -176,6 +177,7 @@ class Bottly(object):
                     self.send_message(channel, 'kekler - core code')
                     self.send_message(channel, 'Dragonkeeper - Forked - VPS')
                     self.send_message(channel, 'darthlukan - code contributer')
+                    self.send_message(channel, 'AdrianKoshka Sucks!')
                 if self.trigger + 'foo' == command:
                     self.send_message(channel, 'bar')
                 elif self.trigger + 'leave' == command:
