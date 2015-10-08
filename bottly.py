@@ -166,12 +166,16 @@ n
                 self.tell(reciever, message, sender)
             if self.hushed is False:
                 if self.autotiny:
-                    for item in data:
-                        if 'http' in item:
-                            resp = self.tinyurl(channel, item.lstrip(':')
-                        try:
-                            if len(resp) < len(item.lstrip(':')
-                                self.send_message(channel, "I don't like them short, but each to their own... %s" % resp)
+                    if self.trigger + 'tiny' == command:
+                        url = data[4]
+                    elif data[0][0] not self.trigger:
+                        for item in data:
+                            if 'http' in item:
+                                url = item.lstrip(':')
+                    short_url = self.tinyurl(channel, url)
+                    try:
+                        if len(url) < len(short_url)
+                            self.send_message(channel, "I don't like them short, but each to their own... %s" % resp)
                 if self.autotiny == False:
                     if self.trigger + 'tiny' == command:
                         try:

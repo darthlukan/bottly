@@ -1,1 +1,5 @@
 /database
+
+/bin/*
+/include/*
+/lib/*
