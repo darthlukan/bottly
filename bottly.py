@@ -45,7 +45,7 @@ class Bottly(object):
         self.send_data('JOIN %s' % channel)
 
     def leave_channel(self, channel, message):
-        self.send_data('PART %s :[pure alabama blacksnake] ' % channel)
+        self.send_data('PART %s :[pure alabama blacksnake]' % channel)
         print(message)
 
     def register_nick(self):
@@ -164,8 +164,11 @@ class Bottly(object):
                             self.send_message(channel, 'Please provide a URL')
                 if self.trigger + 'help' == command:
                     self.helpful(channel)
-                #if self.trigger + 'bug' == command:
-                #    send_message(channel, 'To report an issue, visit https://github.com/kekler/bottly/issues')
+                if self.trigger + 'bug' == command:
+                    send_message(channel, 'To report an issue, press 1')
+                    send_message(channel, 'To report a missing screw, press 2')
+                    send_message(channel, 'To report an X-Wing in the vents, press 3')
+                    send_message(channel, 'To speak to an advisor, immigrate to dubai')
                 if self.trigger + 'uptime' == command:
                     uptime = self.uptime(self.start_time)
                     self.send_message(channel, 'Uptime: %s' % uptime)
@@ -205,7 +208,7 @@ class Bottly(object):
                         if state == 'UP':
                             self.send_message(channel, 'It\'s just you! %s appears to be up from here' % data[4])
                         elif state == 'DOWN':
-                            self.send_message(channel, 'It\'s not just you! %s appears to be down from here to' % data[4])
+                            self.send_message(channel, 'It\'s not just you! %s appears to be down from here too.' % data[4])
                     except IndexError:
                         self.send_message(channel, 'Please provide a URL')
             if self.trigger + 'unhush' == command and self.is_admin(sender):
