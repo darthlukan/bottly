@@ -1,10 +1,29 @@
 {
-	"Admins": ["Dragonkeeper", "morning_star", "ShaggyTwoDope"],
-	"Server": "irc.freenode.net",
-	"Port": "6667",
-	"Channel": ["#nixheads"],
-	"BotUser": "LoveBot",
-	"BotNick": "LoveBot",
-	"Trigger": "~",
-	"LogDir": "/tmp/bottlog"
+    "DEBUG": "True",
+    "Amdins": ["Dragonkeeper", "morning_star", "ShaggyTwoDope"],
+    "Trusted": ["kekler"],
+    "Server": "irc.freenode.net",
+    "Port": "6667",
+    "Channel": ["#nixheads"],
+    "BotUser": "LoveBot",
+    "BotNick": "LoveBot",                                                                                    
+    "Trigger": "~",
+    "LogDir": "/tmp/bottlog",
+    "Responses": {
+        "quit": "Quitting!",
+        "leave": "Leaving.",
+        "tiny_success": "Here's that shortened! ",
+        "tiny_short": "That URL was already pretty short",
+        "tiny_failure": "Oops! Error within TinyURL",
+        "more_mail": "You have more messages!",
+        "no_mail": "No message!",
+        "hush_on": "Hushed",
+        "hush_off": "Unhushed",
+        "autotiny_on": "AutoTiny turned off...",
+        "autotiny_off": "AutoTiny turned on..",
+        "isup_up": "It's just you!",
+        "isup_down":"It's not just you!",
+        "deny": "You're not authorized to run that command!"
+    }
 }
+
