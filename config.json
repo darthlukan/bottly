@@ -1,10 +1,10 @@
 {
-	"Admins": ["kekler", "darthlukan"],
+	"Admins": ["Dragonkeeper", "morning_star", "ShaggyTwoDope"],
 	"Server": "irc.freenode.net",
 	"Port": "6667",
-	"Channel": ["#kekler"],
-	"BotUser": "kekbot",
-	"BotNick": "kekbot",
-	"Trigger": "?",
+	"Channel": ["#nixheads"],
+	"BotUser": "Lovebot",
+	"BotNick": "LoveBot",
+	"Trigger": "~",
 	"LogDir": "/tmp/bottlog"
 }

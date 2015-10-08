@@ -34,7 +34,7 @@ class Bottly(object):
         self.irc.connect((self.server, self.port))
 
     def disconnect_server(self):
-        self.send_data('QUIT :Quit: fuck this shit')
+        self.send_data('QUIT :Quit: Love you long time')
         self.irc.close()
 
     def pong(self, target=':Pong'):
@@ -45,7 +45,7 @@ class Bottly(object):
         self.send_data('JOIN %s' % channel)
 
     def leave_channel(self, channel, message):
-        self.send_data('PART %s :[...not that anyone cares] ' % channel)
+        self.send_data('PART %s :[pure alabama blacksnake]' % channel)
         print(message)
 
     def register_nick(self):
@@ -75,6 +75,7 @@ class Bottly(object):
         return decoded_data
 
     def check_input(self, data):
+        self.send_data('JOIN %s' % channel)
         if 'ERROR' in data:
             print('Error, disconnecting')
         elif data[1] in ['PRIVMSG', 'JOIN', 'PART']:
@@ -86,7 +87,7 @@ class Bottly(object):
         try:
             return urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
         except:
-            self.send_message(channel, 'Oops! Something went wrong with TinyURL')
+            self.send_message(channel, "Oops! That wont go in, He's TinyURL")
 
     def tell(self, reciever, message, sender):
         db = self.db
@@ -112,17 +113,34 @@ class Bottly(object):
             else:
                 self.tell(row[0], row[1], row[2])
         if len(all_rows) > 4:
-            self.send_message(channel, 'You have additional mail waiting...')
+            self.send_message(channel, 'You have more love to aquire...')
         elif not len(all_rows):
-            self.send_message(channel, 'You have no new messages')
+            self.send_message(channel, 'No Love for you')
+        return
+    
+    def checkprvmail(self, channel, reciever):
+        db = self.db
+        all_rows = database.get_tells(db, reciever)
+        print(all_rows)
+        x = 0
+        for row in all_rows:
+            if x < 8:
+                x += 1
+                self.send_message(reciever, ': ' + row[1] + ' -' + row[2])
+            else:
+                self.tell(row[0], row[1], row[2])
+        if len(all_rows) > 8:
+            self.send_message(reciever, 'You have more love to aquire...')
+        elif not len(all_rows):
+            self.send_message(reciever, 'No Love for you')
         return
 
     def helpful(self, channel):
-        self.send_message(channel, '"?tiny <url>" - shortens URL with TinyURL')
-        self.send_message(channel, '"?isup <url>" - lets you know the status of a website via isup.me')
-        self.send_message(channel, '"?author" - information about authors')
-        self.send_message(channel, '"?bug" - information about where to report bottly\'s issues')
-        self.send_message(channel, '"?tell" - leaves a user a message, "?checkmail" - checks your messages')
+        self.send_message(channel, '"~tiny <url>" - shortens URL with TinyURL')
+        self.send_message(channel, '"~isup <url>" - lets you know the status of a website via isup.me')
+        self.send_message(channel, '"~author" - information about authors')
+        self.send_message(channel, '"~bug" - information about where to report bottly\'s issues')
+        self.send_message(channel, '"~tell" - leaves a user a message, "~checkmail" - checks your messages')
 
     def command_filter(self, data):
         sender = self.get_sender(data[0])
@@ -132,7 +150,8 @@ class Bottly(object):
         except:
             command = ''
         if '#' not in channel:
-            self.send_message(sender, 'No messaging commands')
+            if self.trigger + 'checkmail' == command:
+                self.checkprvmail(channel,sender)
         else:
             if self.trigger + 'tinyon' == command:
                 self.autotiny = False
@@ -144,7 +163,7 @@ class Bottly(object):
                         resp = self.tinyurl(channel, item.lstrip(':'))
                         try:
                             if len(resp) < len(item):
-                                self.send_message(channel, 'Here! I shortened that for you: ' + resp)
+                                self.send_message(channel, 'I dont like them short, but each to their own ...  ' + resp)
                         except:
                             print('error')     
             if self.trigger + 'tell' == command:
@@ -155,22 +174,28 @@ class Bottly(object):
                 if self.trigger + 'checkmail' == command:
                     self.checkmail(channel,sender)
                 if self.trigger + 'tiny' == command:
-                    try:
-                        url = data[4]
-                        resp = self.tinyurl(channel,url)
-                        self.send_message(channel, 'Here! I shortened that for you: ' + resp)
-                    except:
-                        self.send_message(channel, 'Please provide a URL')
+                    if self.autotiny is True:
+                        try:
+                            url = data[4]
+                            resp = self.tinyurl(channel,url)
+                            self.send_message(channel, 'I dont like them short, but each to their own ... ' + resp)
+                        except:
+                            self.send_message(channel, 'Please provide a URL')
                 if self.trigger + 'help' == command:
                     self.helpful(channel)
                 if self.trigger + 'bug' == command:
-                    send_message(channel, 'To report an issue, visit https://github.com/kekler/bottly/issues')
+                    self.send_message(channel, 'To report an issue, press 1')
+                    self.send_message(channel, 'To report a missing screw, press 2')
+                    self.send_message(channel, 'To report an X-Wing in the vents, press 3')
+                    self.send_message(channel, 'To speak to an advisor, immigrate to dubai')
                 if self.trigger + 'uptime' == command:
                     uptime = self.uptime(self.start_time)
                     self.send_message(channel, 'Uptime: %s' % uptime)
                 if self.trigger + 'author' == command:
-                    self.send_message(channel, 'kekler - owner and core code')
-                    self.send_message(channel, 'darthlukan - minor code cleanup/advice and ideas')
+                    self.send_message(channel, 'kekler - core code')
+                    self.send_message(channel, 'Dragonkeeper - Forked - VPS')
+                    self.send_message(channel, 'darthlukan - code contributer')
+                    self.send_message(channel, 'AdrianKoshka Sucks!')
                 if self.trigger + 'foo' == command:
                     self.send_message(channel, 'bar')
                 elif self.trigger + 'leave' == command:
@@ -179,7 +204,7 @@ class Bottly(object):
                             channel = data[4]
                         except IndexError:
                             pass
-                        message = '...not that anyone cares'
+                        message = 'pure alabama blacksnake'
                         self.leave_channel(channel, message)
                     else:
                         self.deny_command(channel, sender)
@@ -195,7 +220,7 @@ class Bottly(object):
                 elif self.trigger + 'quit' == command:
                     self.disconnect_server()
                 elif self.trigger + 'hush' == command:
-                    self.send_message(channel, 'Fine... I\'ll be quite!')
+                    self.send_message(channel, 'Giving you love on the down low ;) ')
                     self.hushed = True
                 elif self.trigger + 'isup' == command:
                     try:
@@ -203,11 +228,11 @@ class Bottly(object):
                         if state == 'UP':
                             self.send_message(channel, 'It\'s just you! %s appears to be up from here' % data[4])
                         elif state == 'DOWN':
-                            self.send_message(channel, 'It\'s not just you! %s appears to be down from here to' % data[4])
+                            self.send_message(channel, 'It\'s not just you! %s appears to be down from here too.' % data[4])
                     except IndexError:
                         self.send_message(channel, 'Please provide a URL')
             if self.trigger + 'unhush' == command and self.is_admin(sender):
-                self.send_message(channel, 'Freedom!!!')
+                self.send_message(channel, 'Love for all :) ')
                 self.hushed = False
 
     def get_sender(self, line):
@@ -231,7 +256,7 @@ class Bottly(object):
         return state
 
     def deny_command(self, channel, sender):
-        self.send_message(channel, 'Not authed')
+        self.send_message(channel, 'You cant afford this love')
 
 if __name__ == '__main__':
     bot = Bottly(SERVER, PORT, NICK, ADMINS, TRIGGER)
