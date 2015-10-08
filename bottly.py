@@ -165,10 +165,10 @@ class Bottly(object):
                 if self.trigger + 'help' == command:
                     self.helpful(channel)
                 if self.trigger + 'bug' == command:
-                    send_message(channel, 'To report an issue, press 1')
-                    send_message(channel, 'To report a missing screw, press 2')
-                    send_message(channel, 'To report an X-Wing in the vents, press 3')
-                    send_message(channel, 'To speak to an advisor, immigrate to dubai')
+                    self.send_message(channel, 'To report an issue, press 1')
+                    self.send_message(channel, 'To report a missing screw, press 2')
+                    self.send_message(channel, 'To report an X-Wing in the vents, press 3')
+                    self.send_message(channel, 'To speak to an advisor, immigrate to dubai')
                 if self.trigger + 'uptime' == command:
                     uptime = self.uptime(self.start_time)
                     self.send_message(channel, 'Uptime: %s' % uptime)
