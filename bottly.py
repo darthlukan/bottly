@@ -167,7 +167,7 @@ class Bottly(object):
                 if self.autotiny:
                     if self.trigger + 'tiny' == command:
                         url = data[4]
-                    elif data[0][0] not self.trigger:
+                    elif data[0][0] is not self.trigger:
                         for item in data:
                             if 'http' in item:
                                 url = item.lstrip(':')
