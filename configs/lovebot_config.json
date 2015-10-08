@@ -1,0 +1,28 @@
+{
+	"DEBUG": "True",
+    "Admins": ["Dragonkeeper", "morning_star", "ShaggyTwoDope"],
+    "Trusted": ["kekler"],
+	"Server": "irc.freenode.net",
+	"Port": "6667",
+	"Channel": ["#nixheads"],
+	"BotUser": "LoveBot",
+	"BotNick": "LoveBot",
+	"Trigger": "~",
+	"LogDir": "/tmp/bottlog",
+    "Responses": {
+        "quit": "Love you long time!",
+        "leave": "Pure Alabama Blacksnack",
+        "tiny_success": "I don't like them but to each their own...",
+        "tiny_short": "That's short enough already... that's what she said!",
+        "tiny_failure": "Oops! That won't go in there, he's TinyURL",
+        "more_mail": "You have more love to aquire...",
+        "no_mail": "No love for you!",
+        "hush_on": "Giving you love on the down low! ;)",
+        "hush_off": "Love for all! :)",
+        "autotiny_on": "",
+        "autotiny_off": "", 
+        "isup_up": "Viagra's keeping him up still! ",
+        "isup_down":"Pushed it down to deep, got stuck",
+        "deny": "You can't afford this love!"
+    }
+}
