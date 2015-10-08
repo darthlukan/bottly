@@ -117,6 +117,23 @@ class Bottly(object):
         elif not len(all_rows):
             self.send_message(channel, 'No Love for you')
         return
+    
+        def checkprvmail(self, channel, reciever):
+        db = self.db
+        all_rows = database.get_tells(db, reciever)
+        print(all_rows)
+        x = 0
+        for row in all_rows:
+            if x < 8:
+                x += 1
+                self.send_message(reciever, ': ' + row[1] + ' -' + row[2])
+            else:
+                self.tell(row[0], row[1], row[2])
+        if len(all_rows) > 8:
+            self.send_message(channel, 'You have more love to aquire...')
+        elif not len(all_rows):
+            self.send_message(channel, 'No Love for you')
+        return
 
     def helpful(self, channel):
         self.send_message(channel, '"~tiny <url>" - shortens URL with TinyURL')
@@ -133,7 +150,8 @@ class Bottly(object):
         except:
             command = ''
         if '#' not in channel:
-            self.send_message(sender, 'No messaging commands')
+            if self.trigger + 'checkmail' == command:
+                self.checkprvmail(channel,sender)
         else:
             if self.trigger + 'tinyon' == command:
                 self.autotiny = False
