@@ -118,7 +118,7 @@ class Bottly(object):
             self.send_message(channel, 'No Love for you')
         return
     
-        def checkprvmail(self, channel, reciever):
+    def checkprvmail(self, channel, reciever):
         db = self.db
         all_rows = database.get_tells(db, reciever)
         print(all_rows)
