@@ -118,11 +118,11 @@ class Bottly(object):
         return
 
     def helpful(self, channel):
-        self.send_message(channel, '"?tiny <url>" - shortens URL with TinyURL')
-        self.send_message(channel, '"?isup <url>" - lets you know the status of a website via isup.me')
-        self.send_message(channel, '"?author" - information about authors')
-        self.send_message(channel, '"?bug" - information about where to report bottly\'s issues')
-        self.send_message(channel, '"?tell" - leaves a user a message, "?checkmail" - checks your messages')
+        self.send_message(channel, '"~tiny <url>" - shortens URL with TinyURL')
+        self.send_message(channel, '"~isup <url>" - lets you know the status of a website via isup.me')
+        self.send_message(channel, '"~author" - information about authors')
+        self.send_message(channel, '"~bug" - information about where to report bottly\'s issues')
+        self.send_message(channel, '"~tell" - leaves a user a message, "~checkmail" - checks your messages')
 
     def command_filter(self, data):
         sender = self.get_sender(data[0])
@@ -155,12 +155,13 @@ class Bottly(object):
                 if self.trigger + 'checkmail' == command:
                     self.checkmail(channel,sender)
                 if self.trigger + 'tiny' == command:
-                    try:
-                        url = data[4]
-                        resp = self.tinyurl(channel,url)
-                        self.send_message(channel, 'I dont like them short, but each to their own ... ' + resp)
-                    except:
-                        self.send_message(channel, 'Please provide a URL')
+                    if self.autotiny is True:
+                        try:
+                            url = data[4]
+                            resp = self.tinyurl(channel,url)
+                            self.send_message(channel, 'I dont like them short, but each to their own ... ' + resp)
+                        except:
+                            self.send_message(channel, 'Please provide a URL')
                 if self.trigger + 'help' == command:
                     self.helpful(channel)
                 #if self.trigger + 'bug' == command:
