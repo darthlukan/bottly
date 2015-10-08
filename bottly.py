@@ -87,7 +87,11 @@ class Bottly(object):
 
     def tinyurl(self, channel, url):
         try:
-            return urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
+            short_url = urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
+            if len(short_url) < len(url):
+                return "I don't like them short but each to their own... %s" % short_url
+            elif len(url) < len(short_url):
+                return "That's short enough already... that's what she said!"
         except:
             self.send_message(channel, "Oops! That wont go in, He's TinyURL")
 
@@ -154,10 +158,16 @@ class Bottly(object):
         if '#' not in channel:
             if self.trigger + 'checkmail' == command:
                 self.checkprvmail(channel,sender)
+            if self.trigger + 'join' == command and self.is_admin(sender, channel):
+                self.join_channel(data[4])
+            if self.trigger + 'leave' == command and self.is_admin(sender, channel):
+                self.leave_channel(data[4])
+            if self.trigger + 'quit' == command and self.is_admin(sender, channel):
+                self.disconnect_server()
         else:
-            if self.trigger + 'tinyon' == command:
+            if self.trigger + 'tinyon' == command and self.is_admin(sender, channel):
                 self.autotiny = False
-            if self.trigger + 'tinyoff' == command:
+            if self.trigger + 'tinyoff' == command and self.is_admin(sender, channel):
                 self.autotiny = True
             if self.trigger + 'tell' == command:
                 reciever = data[4]
@@ -167,20 +177,20 @@ class Bottly(object):
                 if self.autotiny:
                     if self.trigger + 'tiny' == command:
                         url = data[4]
-                    elif data[0][0] is not self.trigger:
+                        message = self.tinyurl(channel, url)
+                        self.send_message(channel, message)
+                    elif self.trigger not in command:
                         for item in data:
                             if 'http' in item:
                                 url = item.lstrip(':')
-                    short_url = self.tinyurl(channel, url)
-                    if len(url) < len(short_url):
-                        self.send_message(channel, "I don't like them short, but each to their own... %s" % short_url)
-                        
+                                message = self.tinyurl(channel, url)
+                                self.send_message(channel, message)                
                 if self.autotiny == False:
                     if self.trigger + 'tiny' == command:
                         try:
                             url = data[4]
-                            resp = self.tinyurl(channel, url)
-                            self.send_message(channel, "I don't like them short, but each to their own... %s" % resp)
+                            message = self.tinyurl(channel, url)
+                            self.send_message(channel, message)
                         except: 
                             self.send_message(channel, 'Please provide a valid URL')
                 if self.trigger + 'checkmail' == command:
@@ -203,27 +213,23 @@ class Bottly(object):
                 if self.trigger + 'foo' == command:
                     self.send_message(channel, 'bar')
                 elif self.trigger + 'leave' == command:
-                    if self.is_admin(sender):
+                    if self.is_admin(sender, channel):
                         try:
                             channel = data[4]
                         except IndexError:
                             pass
                         message = 'pure alabama blacksnake'
                         self.leave_channel(channel, message)
-                    else:
-                        self.deny_command(channel, sender)
                 elif self.trigger + 'join' == command:
-                    if self.is_admin(sender):
+                    if self.is_admin(sender, channel):
                         try:
                             channel = data[4]
                         except IndexError:
                             pass
                         self.join_channel(channel)
-                    else:
-                        self.deny_command(channel, sender)
-                elif self.trigger + 'quit' == command:
+                elif self.trigger + 'quit' == command and self.is_admin(sender, channel):
                     self.disconnect_server()
-                elif self.trigger + 'hush' == command:
+                elif self.trigger + 'hush' == command and self.is_admin(sender, channel):
                     self.send_message(channel, 'Giving you love on the down low ;) ')
                     self.hushed = True
                 elif self.trigger + 'isup' == command:
@@ -235,7 +241,7 @@ class Bottly(object):
                             self.send_message(channel, 'It\'s not just you! %s appears to be down from here too.' % data[4])
                     except IndexError:
                         self.send_message(channel, 'Please provide a URL')
-            if self.trigger + 'unhush' == command and self.is_admin(sender):
+            if self.trigger + 'unhush' == command and self.is_admin(sender, channel):
                 self.send_message(channel, 'Love for all :) ')
                 self.hushed = False
 
@@ -248,8 +254,12 @@ class Bottly(object):
                 sender += str(char)
         return sender
 
-    def is_admin(self, user_nick):
-        return user_nick in self.admins
+    def is_admin(self, user_nick, channel):
+        if user_nick in self.admins:
+            return user_nick in self.admins
+        else: 
+            self.deny_command(channel)
+            return False
 
     def isup(self, domain):
         resp = urlopen('http://www.isup.me/%s' % domain).read()
@@ -259,7 +269,7 @@ class Bottly(object):
             state = 'DOWN'
         return state
 
-    def deny_command(self, channel, sender):
+    def deny_command(self, channel):
         self.send_message(channel, 'You cant afford this love')
 
 if __name__ == '__main__':

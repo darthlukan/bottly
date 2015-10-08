@@ -3,7 +3,7 @@
 	"Server": "irc.freenode.net",
 	"Port": "6667",
 	"Channel": ["#nixheads"],
-	"BotUser": "Lovebot",
+	"BotUser": "LoveBot",
 	"BotNick": "LoveBot",
 	"Trigger": "~",
 	"LogDir": "/tmp/bottlog"
