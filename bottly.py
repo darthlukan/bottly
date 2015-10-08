@@ -172,9 +172,9 @@ class Bottly(object):
                             if 'http' in item:
                                 url = item.lstrip(':')
                     short_url = self.tinyurl(channel, url)
-                    try:
-                        if len(url) < len(short_url)
-                            self.send_message(channel, "I don't like them short, but each to their own... %s" % resp)
+                    if len(url) < len(short_url):
+                        self.send_message(channel, "I don't like them short, but each to their own... %s" % short_url)
+                        
                 if self.autotiny == False:
                     if self.trigger + 'tiny' == command:
                         try:
