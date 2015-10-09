@@ -3,8 +3,6 @@ import datetime
 import json
 import socket
 import re
-import string
-import sys
 import time
 
 from urllib.request import urlopen
@@ -38,7 +36,8 @@ if data["DEBUG"] in "True":
     trusted = [""]
     admins = ["kekler"]
 
-class Bottly(object):    
+
+class Bottly(object):
     # initialize variables and database
     def __init__(self, server, port, nick, trusted, admins, trigger, response):
         self.server = server
@@ -52,7 +51,7 @@ class Bottly(object):
         self.hushed = False
         self.autotiny = True
         self.start_time = time.time()
-        
+
         self.db = database.connect()
         self.logger = log_setup()
 
@@ -123,7 +122,6 @@ class Bottly(object):
             self.command_filter(user, msg_type, destination, command, message)
         elif msg_type in 'KICK':
             self.join_channel(destination)
-          
 
     # conversion functions
     def bytes_to_unicode(self, data):
@@ -165,7 +163,7 @@ class Bottly(object):
         db = self.db
         all_rows = database.get_tells(db, user)
         x = 0
-        for row  in all_rows:
+        for row in all_rows:
             if x < 4:
                 x += 1
                 self.send_message(destination, "%s, %s -%s" % (row[0], row[1], row[2]))
@@ -190,7 +188,6 @@ class Bottly(object):
             return False, self.response["autotiny_off"]
         else:
             return True, self.response["autotiny_on"]
-            
 
     def hushController(self, on):
         if on:
@@ -233,7 +230,7 @@ class Bottly(object):
             return mail
         elif command == "tiny":
             return tiny
-        
+
         if command == "user":
             return checkmail, isup, mail, tiny
         elif command == "trusted":
@@ -271,17 +268,17 @@ class Bottly(object):
                 elif "tinyoff" == command:
                     self.autotiny, message = self.autoTinyController(True)
                 elif "tinyon" == command:
-                    self.autotiny, message  = self.autoTinyController(False)
+                    self.autotiny, message = self.autoTinyController(False)
             # normal user/automatic commands
             if not self.hushed:
-                if "foo" == command: #this is a test command
+                if "foo" == command:  # this is a test command
                     message = "bar"
                 elif "author" == command:
                     message = "kekler - http://github.com/kekler"
                 elif "checkmail" == command:
                     message = self.checkmail(destination, user)
                 elif command == "contributors":
-                    message =  "Dragonkeeper - Hosts on #nixheeads & bug fixes | darthlukan - bug fixes & db.py"
+                    message = "Dragonkeeper - Hosts on #nixheeads & bug fixes | darthlukan - bug fixes & db.py"
                 elif "help" == command:
                     if len(arg) == 1:
                         message = self.usage(arg[0])
@@ -312,10 +309,10 @@ class Bottly(object):
                         for item in arg:
                             if "http" in item:
                                 url = item.lstrip(":")
-                                message = self.tinyurl(destination, url)        
-                elif self.autotiny == False:
+                                message = self.tinyurl(destination, url)
+                elif self.autotiny is False:
                     if "tiny" == command:
-                        if len(arg)  == 1:
+                        if len(arg) == 1:
                             url = arg[0]
                             messsage = self.tinyurl(destination, url)
                         else:
