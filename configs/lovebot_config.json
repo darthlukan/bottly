@@ -8,7 +8,7 @@
     "BotUser": "LoveBot",
     "BotNick": "LoveBot",
     "Trigger": "~",
-    "LogDir": "/tmp/bottlog",
+    "LogDir": "log",
     "Responses": {
         "quit": "Love you long time!",
         "leave": "Pure Alabama Blacksnack",
