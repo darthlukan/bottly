@@ -1,18 +1,21 @@
 import sqlite3
 
+
 def connect():
     db = sqlite3.connect('database')
     init_db(db)
     return db
 
+
 def init_db(db):
     cursor = db.cursor()
     cursor.execute('CREATE TABLE IF NOT EXISTS tells(receiver, message, sender)')
 
+
 def save_tell(db, receiver, message, sender):
     cursor = db.cursor()
     cursor.execute('INSERT INTO tells(receiver, message, sender) VALUES(?,?,?)',
-                    (receiver, message, sender))
+            (receiver, message, sender))
     db.commit()
     return
 
@@ -31,4 +34,3 @@ def get_tells(db, receiver):
     tells = [row for row in rows if receiver in row[0]]
     delete_tells(db, receiver)
     return tells
-
