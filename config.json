@@ -1,6 +1,6 @@
 {
     "DEBUG": "True",
-    "Amdins": ["kekler"],
+    "Admins": ["kekler"],
     "Trusted": [],
     "Server": "irc.freenode.net",
     "Port": "6667",
