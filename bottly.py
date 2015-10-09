@@ -194,9 +194,9 @@ class Bottly(object):
 
     def autoTinyController(self, on):
         if on:
-            return False, self.response["autotiny_off"]
+            return True, self.response["autotiny_off"]
         else:
-            return True, self.response["autotiny_on"]
+            return False, self.response["autotiny_on"]
 
     def hushController(self, on):
         if on:
@@ -275,9 +275,9 @@ class Bottly(object):
                 elif "unhush" == command:
                     self.hushed, message = self.hushController(False)
                 elif "tinyoff" == command:
-                    self.autotiny, message = self.autoTinyController(True)
-                elif "tinyon" == command:
                     self.autotiny, message = self.autoTinyController(False)
+                elif "tinyon" == command:
+                    self.autotiny, message = self.autoTinyController(True)
             # normal user/automatic commands
             if not self.hushed:
                 if "foo" == command:  # this is a test command
@@ -307,25 +307,32 @@ class Bottly(object):
                         message = self.usage("mail")
                 elif "uptime" == command:
                     message = self.uptime(self.start_time)
-                elif self.autotiny:
-                    if "tiny" == command:
-                        if len(arg) == 1:
-                            url = arg[0]
+        
+
+        if self.autotiny:
+            print("self.autotiny")
+            print("%s %s %s" % (user, command, arg))
+            if "tiny" == command:
+                if len(arg) == 1:
+                    url = arg[0]
+                    message = self.tinyurl(destination, url)
+                else:
+                    message = self.usage("tiny")
+            else:
+                if type(arg) is list:
+                    for item in arg:
+                        if "http" in item:
+                            url = item
                             message = self.tinyurl(destination, url)
-                        else:
-                            message = self.usage("tiny")
-                    else:
-                        for item in arg:
-                            if "http" in item:
-                                url = item.lstrip(":")
-                                message = self.tinyurl(destination, url)
-                elif self.autotiny is False:
-                    if "tiny" == command:
-                        if len(arg) == 1:
-                            url = arg[0]
-                            messsage = self.tinyurl(destination, url)
-                        else:
-                            message = self.usage("tiny")
+                
+        elif not self.autotiny:
+            print("not self.autotiny")
+            if "tiny" == command:
+                if len(arg) == 1:
+                    url = arg[0]
+                    messsage = self.tinyurl(destination, url)
+                else:
+                    message = self.usage("tiny")
 
         try:
             self.pretty_print(self.nick, msg_type, destination, message)
@@ -337,7 +344,6 @@ class Bottly(object):
                     self.send_message(destination, message)
         except UnboundLocalError:
             pass
-
 if __name__ == "__main__":
     bot = Bottly(server, port, nick, trusted, admins, trigger, response)
     bot.connect_server()
