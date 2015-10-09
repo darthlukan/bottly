@@ -5,20 +5,23 @@ import os
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-def log_setup():
-    logger = logging.getLogger('myapp')
-    if not os.path.exists(base_dir + "/log/"):
-        os.makedirs(base_dir + "/log/")
+def log_setup(log_dir, log_file):
+    logger = logging.getLogger("bottly")
+    log_path = base_dir + "/" + log_dir + "/"
+    log = log_path + log_file
+    if not os.path.exists(log_path):
+        os.makedirs(log_path)
     else:
         pass
-    if not os.path.exists(base_dir + "/log/command.log"):
-        hdlr = logging.FileHandler(base_dir + "/log/command.log", 'w')
+    if not os.path.isfile(log):
+        handler = logging.FileHandler(log, "w")
     else:
         pass
-    hdlr = logging.FileHandler(base_dir + "/log/command.log")
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-    hdlr.setFormatter(formatter)
-    logger.addHandler(hdlr)
+    handler = logging.FileHandler(log)
+    formatter = logging.Formatter("%(levelname)s %(asctime)s %(message)s",
+                                  "%H:%M:%S")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
     logger.setLevel(logging.INFO)
 
     return logger
@@ -26,4 +29,5 @@ def log_setup():
 
 def log(logger, user, msg_type, destination, command, arg):
     arg = " ".join(arg)
-    logger.info(user + "| " + msg_type + "/" + destination + ": " + command + " " + arg)
+    message = command + " " + arg
+    logger.info("%s %s: %s" % (destination, user, message))

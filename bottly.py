@@ -20,6 +20,9 @@ port = data["Port"]
 channels = data["Channel"]
 nick = data["BotNick"]
 
+log_dir = data["LogDir"]
+log_file = data["LogFile"]
+
 # authenticated users/command trigger
 trusted = data["Trusted"]
 admins = data["Admins"]
@@ -53,7 +56,7 @@ class Bottly(object):
         self.start_time = time.time()
 
         self.db = database.connect()
-        self.logger = log_setup()
+        self.logger = log_setup(log_dir, log_file)
 
     # functions for getting, maintaining and closing the connection
     def connect_server(self):
@@ -103,7 +106,8 @@ class Bottly(object):
             destination = data[2]
             try:
                 message = data[3:]
-                message[0] = message[0].lstrip(":")
+                message[0] = message[0][1:]
+                self.pretty_print(user, msg_type, destination, message)
                 if message[0][0] is self.trigger:
                     command = message[0]
                     message = message[1:]
@@ -112,7 +116,6 @@ class Bottly(object):
             except IndexError:
                 command = None
                 message = None
-            print(user, msg_type, destination, command, message)
             self.check_input(user, msg_type, destination, command, message)
 
     def check_input(self, user, msg_type, destination, command, message):
@@ -129,6 +132,12 @@ class Bottly(object):
 
     def unicode_to_bytes(self, data):
         return data.encode("UTF-8")
+
+    # makes data pretty terminal print/logger
+    def pretty_print(self, user, msg_type, destination, message):
+        if type(message) is list:
+            message = " ".join(message)
+        print("%s %s %s :%s" % (user, msg_type, destination, message))
 
     # helper functions for command functions below
     def send_message(self, destination, data):
@@ -191,9 +200,9 @@ class Bottly(object):
 
     def hushController(self, on):
         if on:
-            return False, self.response["hush_on"]
+            return True, self.response["hush_on"]
         else:
-            return True, self.response["hush_off"]
+            return False, self.response["hush_off"]
 
     def tinyurl(self, destination, url):
         try:
@@ -319,7 +328,7 @@ class Bottly(object):
                             message = self.usage("tiny")
 
         try:
-            print(message)
+            self.pretty_print(self.nick, msg_type, destination, message)
             if message is not None:
                 if type(message) is tuple:
                     for line in message:

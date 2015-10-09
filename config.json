@@ -8,7 +8,8 @@
     "BotUser": "bottly",
     "BotNick": "bottly",                                                                                    
     "Trigger": "~",
-    "LogDir": "/log/",
+    "LogDir": "log",
+    "LogFile": "logger",
     "Responses": {
         "quit": "Quitting!",
         "leave": "Leaving.",
