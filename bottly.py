@@ -1,275 +1,346 @@
-import json, re, socket, string, sys, time, datetime
+# required modules
+import datetime
+import json
+import socket
+import re
+import string
+import sys
+import time
+
 from urllib.request import urlopen
 
 import db as database
+from logger import log_setup, log
 
-
-with open('config.json') as json_data:
+# loading configurations from config.json
+with open("config.json") as json_data:
     data = json.load(json_data)
 
-SERVER = data['Server']
-PORT = data['Port']
-CHANNEL = data['Channel']
+# server/channel configs
+server = data["Server"]
+port = data["Port"]
+channels = data["Channel"]
+nick = data["BotNick"]
 
-NICK = data['BotNick']
-TRIGGER = data['Trigger']
-ADMINS = data['Admins']
+# authenticated users/command trigger
+trusted = data["Trusted"]
+admins = data["Admins"]
+trigger = data["Trigger"]
 
+# responses for various commands
+response = data["Responses"]
 
-class Bottly(object):
+# only loaded when DEBUG is set to True in config.json
+if data["DEBUG"] in "True":
+    channels = ["#bottly"]
+    nick = "bottly"
+    trigger = "!"
+    trusted = [""]
+    admins = ["kekler"]
 
-    def __init__(self, server, port, nick, admins, trigger):
+class Bottly(object):    
+    # initialize variables and database
+    def __init__(self, server, port, nick, trusted, admins, trigger, response):
         self.server = server
         self.port = int(port)
         self.nick = nick
+        self.trusted = trusted + admins
         self.admins = admins
         self.trigger = trigger
-        self.hushed = False
-        self.autotiny = False
-        self.start_time = time.time()
-        self.db = database.connect()
+        self.response = response
 
+        self.hushed = False
+        self.autotiny = True
+        self.start_time = time.time()
+        
+        self.db = database.connect()
+        self.logger = log_setup()
+
+    # functions for getting, maintaining and closing the connection
     def connect_server(self):
         self.irc = socket.socket()
         self.irc.connect((self.server, self.port))
 
     def disconnect_server(self):
-        self.send_data('QUIT :Quit: Love you long time')
-        self.irc.close()
+        message = "QUIT :Quit: %s" % self.response["quit"]
+        self.send_data(message)
 
-    def pong(self, target=':Pong'):
-        message = 'PONG %s' % target
+    def pong(self, target=":Pong"):
+        message = "PONG %s" % target
         self.send_data(message)
 
     def join_channel(self, channel, password=''):
-        self.send_data('JOIN %s' % channel)
+        message = "JOIN %s" % channel
+        self.send_data(message)
 
-    def leave_channel(self, channel, message):
-        self.send_data('PART %s :[pure alabama blacksnake]' % channel)
-        print(message)
+    def leave_channel(self, channel):
+        message = "PART %s :%s" % (channel, self.response["leave"])
+        self.send_data(message)
 
     def register_nick(self):
-        self.send_data('USER {0} {0} {1} {0}'.format(self.nick, self.server))
-        self.send_data('NICK ' + self.nick)
+        message = "USER {0} {0} {1} {0}".format(self.nick, self.server)
+        self.send_data(message)
+        message = "NICK %s" % self.nick
+        self.send_data(message)
 
     def send_data(self, data):
         if data is not None:
-            self.irc.send(str.encode(data + '\r\n'))
+            data = self.unicode_to_bytes(data + "\r\n")
+            self.irc.send(data)
 
-    def send_message(self, reciever, message):
-        self.send_data('PRIVMSG ' + reciever + ' :' + message)
+    def get_data(self):
+        data = self.irc.recv(4096)
+        data = self.analyze_data(data)
+        return data
+
+    def analyze_data(self, data):
+        data = self.bytes_to_unicode(data)
+        data = data.split()
+        if data[0] in "PING":
+            self.pong(data[1])
+        else:
+            user = self.get_user(data[0])
+            msg_type = data[1]
+            destination = data[2]
+            try:
+                message = data[3:]
+                message[0] = message[0].lstrip(":")
+                if message[0][0] is self.trigger:
+                    command = message[0]
+                    message = message[1:]
+                else:
+                    command = None
+            except IndexError:
+                command = None
+                message = None
+            print(user, msg_type, destination, command, message)
+            self.check_input(user, msg_type, destination, command, message)
+
+    def check_input(self, user, msg_type, destination, command, message):
+        if "ERROR" in msg_type:
+            print("Error")
+        elif msg_type in ["PRIVMSG", "JOIN", "PART"]:
+            self.command_filter(user, msg_type, destination, command, message)
+        elif msg_type in 'KICK':
+            self.join_channel(destination)
+          
+
+    # conversion functions
+    def bytes_to_unicode(self, data):
+        return data.decode("UTF-8")
+
+    def unicode_to_bytes(self, data):
+        return data.encode("UTF-8")
+
+    # helper functions for command functions below
+    def send_message(self, destination, data):
+        message = "PRIVMSG %s :%s" % (destination, data)
+        self.send_data(message)
+
+    def get_user(self, data):
+        user = ''
+        for char in data:
+            if char == "!":
+                break
+            elif char != ":":
+                user += str(char)
+        return user
+
+    def is_trusted(self, destination, user):
+        return user in self.trusted
+
+    def is_admin(self, destination, user):
+        return user in self.admins
+
+    def deny_command(self, destination):
+        self.send_message(destination, response["deny"])
+
+    def trigger_check(self, data):
+        if self.trigger in data:
+            data = data.lstrip(self.trigger)
+            return True, data
+
+    # command functions (in alphabetical order)
+    def checkmail(self, destination, user):
+        db = self.db
+        all_rows = database.get_tells(db, user)
+        x = 0
+        for row  in all_rows:
+            if x < 4:
+                x += 1
+                self.send_message(destination, "%s, %s -%s" % (row[0], row[1], row[2]))
+        if len(all_rows) > 4:
+            return self.response["more_mail"]
+        elif not len(all_rows):
+            return self.response["no_mail"]
+
+    def isup(self, url):
+        resp = urlopen("http://www.isup.me/%s" % url).read()
+        if re.search(str.encode("It's just you."), resp, re.DOTALL):
+            return self.response["isup_up"]
+        else:
+            return self.response["isup_down"]
+
+    def mail(self, destination, message, user):
+        db = self.db
+        database.save_tell(db, destination, message, user)
+
+    def autoTinyController(self, on):
+        if on:
+            return False, self.response["autotiny_off"]
+        else:
+            return True, self.response["autotiny_on"]
+            
+
+    def hushController(self, on):
+        if on:
+            return False, self.response["hush_on"]
+        else:
+            return True, self.response["hush_off"]
+
+    def tinyurl(self, destination, url):
+        try:
+            short_url = urlopen("http://tinyurl.com/api-create.php?url=%s" % url).read().decode()
+            if len(short_url) < len(url):
+                return self.response["tiny_success"] + ' ' + short_url
+            elif len(url) < len(short_url):
+                return self.response["tiny_short"]
+        except:
+            return self.response["tiny_failure"]
 
     def uptime(self, start_time):
         end_time = time.time()
         uptime = end_time - start_time
         uptime = str(datetime.timedelta(seconds=int(uptime)))
-        return uptime
+        return "Uptime: %s" % uptime
 
-    def get_data(self):
-        data = self.irc.recv(4096)
-        decoded_data = []
-        for item in data.split():
-            decoded_data.append(item.decode('UTF-8'))
-        print(decoded_data)
-        print(data)
-        return decoded_data
+    def usage(self, command):
+        # trusted command usage and descriptions
+        autotiny = "USAGE: '~tiny{on,off}' - {enables,disables} %s's auto URL shorten feature" % self.nick
+        hush = "USAGE: '~{hush,unhush' - {anables,disables} output fromm %s" % self.nick
 
-    def check_input(self, data):
-        self.send_data('JOIN %s' % channel)
-        if 'ERROR' in data:
-            print('Error, disconnecting')
-        elif data[1] in ['PRIVMSG', 'JOIN', 'PART']:
-            self.command_filter(data)
-        elif data[0] == 'PING':
-            self.pong(data[0])
+        # user command usage and descriptions
+        checkmail = "USAGE: '~checkmail' - check your mailbox"
+        isup = "USAGE: '~isup <url>' -  check network status of your favorite websites"
+        mail = "USAGE: '~mail <recipient> <message>' - send a message to someone's mailbox"
+        tiny = "USAGE: '~tiny  <url>' - shorten long URLs with TinyURL"
 
-    def tinyurl(self, channel, url):
-        try:
-            return urlopen('http://tinyurl.com/api-create.php?url=' + url).read().decode()
-        except:
-            self.send_message(channel, "Oops! That wont go in, He's TinyURL")
+        if command == "checkmail":
+            return checkmail
+        elif command == "isup":
+            return isup
+        elif command == "mail":
+            return mail
+        elif command == "tiny":
+            return tiny
+        
+        if command == "user":
+            return checkmail, isup, mail, tiny
+        elif command == "trusted":
+            return autotiny, hush
+        elif command == "admin":
+            pass
 
-    def tell(self, reciever, message, sender):
-        db = self.db
-        data = ''
-        if not isinstance(message, str):
-            for word in message:
-                data += word
-                data += ' '
+    # main logic of bot, decides what command to run if any
+    def command_filter(self, user, msg_type, destination, command, arg):
+        if command is not None:
+            trig_pass, command = self.trigger_check(command)
         else:
-            data = message
-        database.save_tell(db, reciever, data, sender)
-        return
+            trig_pass = False
 
-    def checkmail(self, channel, reciever):
-        db = self.db
-        all_rows = database.get_tells(db, reciever)
-        print(all_rows)
-        x = 0
-        for row in all_rows:
-            if x < 4:
-                x += 1
-                self.send_message(channel, row[0] + ': ' + row[1] + ' -' + row[2])
-            else:
-                self.tell(row[0], row[1], row[2])
-        if len(all_rows) > 4:
-            self.send_message(channel, 'You have more love to aquire...')
-        elif not len(all_rows):
-            self.send_message(channel, 'No Love for you')
-        return
-    
-    def checkprvmail(self, channel, reciever):
-        db = self.db
-        all_rows = database.get_tells(db, reciever)
-        print(all_rows)
-        x = 0
-        for row in all_rows:
-            if x < 8:
-                x += 1
-                self.send_message(reciever, ': ' + row[1] + ' -' + row[2])
-            else:
-                self.tell(row[0], row[1], row[2])
-        if len(all_rows) > 8:
-            self.send_message(reciever, 'You have more love to aquire...')
-        elif not len(all_rows):
-            self.send_message(reciever, 'No Love for you')
-        return
-
-    def helpful(self, channel):
-        self.send_message(channel, '"~tiny <url>" - shortens URL with TinyURL')
-        self.send_message(channel, '"~isup <url>" - lets you know the status of a website via isup.me')
-        self.send_message(channel, '"~author" - information about authors')
-        self.send_message(channel, '"~bug" - information about where to report bottly\'s issues')
-        self.send_message(channel, '"~tell" - leaves a user a message, "~checkmail" - checks your messages')
-
-    def command_filter(self, data):
-        sender = self.get_sender(data[0])
-        channel = data[2]
-        try:
-            command = data[3].lstrip(':')
-        except:
-            command = ''
-        if '#' not in channel:
-            if self.trigger + 'checkmail' == command:
-                self.checkprvmail(channel,sender)
-        else:
-            if self.trigger + 'tinyon' == command:
-                self.autotiny = False
-            if self.trigger + 'tinyoff' == command:
-                self.autotiny = True
-            if self.autotiny is False:
-                for item in data:
-                    if 'http' in item:
-                        resp = self.tinyurl(channel, item.lstrip(':'))
-                        try:
-                            if len(resp) < len(item):
-                                self.send_message(channel, 'I dont like them short, but each to their own ...  ' + resp)
-                        except:
-                            print('error')     
-            if self.trigger + 'tell' == command:
-                reciever = data[4]
-                message = data[5:]
-                self.tell(reciever, message, sender)
-            if self.hushed is False:
-                if self.trigger + 'checkmail' == command:
-                    self.checkmail(channel,sender)
-                if self.trigger + 'tiny' == command:
-                    if self.autotiny is True:
-                        try:
-                            url = data[4]
-                            resp = self.tinyurl(channel,url)
-                            self.send_message(channel, 'I dont like them short, but each to their own ... ' + resp)
-                        except:
-                            self.send_message(channel, 'Please provide a URL')
-                if self.trigger + 'help' == command:
-                    self.helpful(channel)
-                if self.trigger + 'bug' == command:
-                    self.send_message(channel, 'To report an issue, press 1')
-                    self.send_message(channel, 'To report a missing screw, press 2')
-                    self.send_message(channel, 'To report an X-Wing in the vents, press 3')
-                    self.send_message(channel, 'To speak to an advisor, immigrate to dubai')
-                if self.trigger + 'uptime' == command:
-                    uptime = self.uptime(self.start_time)
-                    self.send_message(channel, 'Uptime: %s' % uptime)
-                if self.trigger + 'author' == command:
-                    self.send_message(channel, 'kekler - core code')
-                    self.send_message(channel, 'Dragonkeeper - Forked - VPS')
-                    self.send_message(channel, 'darthlukan - code contributer')
-                    self.send_message(channel, 'AdrianKoshka Sucks!')
-                if self.trigger + 'foo' == command:
-                    self.send_message(channel, 'bar')
-                elif self.trigger + 'leave' == command:
-                    if self.is_admin(sender):
-                        try:
-                            channel = data[4]
-                        except IndexError:
-                            pass
-                        message = 'pure alabama blacksnake'
-                        self.leave_channel(channel, message)
+        if trig_pass:
+            log(self.logger, user, msg_type, destination, command, arg)
+            # admin only commands
+            if self.is_admin(destination, user):
+                if "join" == command:
+                    if len(arg) == 1:
+                        self.join_channel(arg[0])
+                elif "leave" == command:
+                    if len(arg) == 1:
+                        self.leave_channel(arg[0])
                     else:
-                        self.deny_command(channel, sender)
-                elif self.trigger + 'join' == command:
-                    if self.is_admin(sender):
-                        try:
-                            channel = data[4]
-                        except IndexError:
-                            pass
-                        self.join_channel(channel)
-                    else:
-                        self.deny_command(channel, sender)
-                elif self.trigger + 'quit' == command:
+                        self.leave_channel(destination)
+                elif "quit" == command:
                     self.disconnect_server()
-                elif self.trigger + 'hush' == command:
-                    self.send_message(channel, 'Giving you love on the down low ;) ')
-                    self.hushed = True
-                elif self.trigger + 'isup' == command:
-                    try:
-                        state = self.isup(data[4])
-                        if state == 'UP':
-                            self.send_message(channel, 'It\'s just you! %s appears to be up from here' % data[4])
-                        elif state == 'DOWN':
-                            self.send_message(channel, 'It\'s not just you! %s appears to be down from here too.' % data[4])
-                    except IndexError:
-                        self.send_message(channel, 'Please provide a URL')
-            if self.trigger + 'unhush' == command and self.is_admin(sender):
-                self.send_message(channel, 'Love for all :) ')
-                self.hushed = False
+            # trusted/admin only commands
+            if self.is_trusted(destination, user):
+                if "hush" == command:
+                    self.hushed, message = self.hushController(True)
+                elif "unhush" == command:
+                    self.hushed, message = self.hushController(False)
+                elif "tinyoff" == command:
+                    self.autotiny, message = self.autoTinyController(True)
+                elif "tinyon" == command:
+                    self.autotiny, message  = self.autoTinyController(False)
+            # normal user/automatic commands
+            if not self.hushed:
+                if "foo" == command: #this is a test command
+                    message = "bar"
+                elif "author" == command:
+                    message = "kekler - http://github.com/kekler"
+                elif "checkmail" == command:
+                    message = self.checkmail(destination, user)
+                elif command == "contributors":
+                    message =  "Dragonkeeper - Hosts on #nixheeads & bug fixes | darthlukan - bug fixes & db.py"
+                elif "help" == command:
+                    if len(arg) == 1:
+                        message = self.usage(arg[0])
+                    else:
+                        message = self.usage("user")
+                elif "isup" == command:
+                    if len(arg) == 1:
+                        message = self.isup(arg[0])
+                    else:
+                        message = self.usage("isup")
+                elif "mail" == command:
+                    if len(arg) >= 2:
+                        destination = arg[0]
+                        mail = " ".join(arg[1:])
+                        self.mail(destination, mail, user)
+                    else:
+                        message = self.usage("mail")
+                elif "uptime" == command:
+                    message = self.uptime(self.start_time)
+                elif self.autotiny:
+                    if "tiny" == command:
+                        if len(arg) == 1:
+                            url = arg[0]
+                            message = self.tinyurl(destination, url)
+                        else:
+                            message = self.usage("tiny")
+                    else:
+                        for item in arg:
+                            if "http" in item:
+                                url = item.lstrip(":")
+                                message = self.tinyurl(destination, url)        
+                elif self.autotiny == False:
+                    if "tiny" == command:
+                        if len(arg)  == 1:
+                            url = arg[0]
+                            messsage = self.tinyurl(destination, url)
+                        else:
+                            message = self.usage("tiny")
 
-    def get_sender(self, line):
-        sender = ''
-        for char in line:
-            if char == '!':
-                break
-            if char != ':':
-                sender += str(char)
-        return sender
+        try:
+            print(message)
+            if message is not None:
+                if type(message) is tuple:
+                    for line in message:
+                        self.send_message(destination, line)
+                else:
+                    self.send_message(destination, message)
+        except UnboundLocalError:
+            pass
 
-    def is_admin(self, user_nick):
-        return user_nick in self.admins
-
-    def isup(self, domain):
-        resp = urlopen('http://www.isup.me/%s' % domain).read()
-        if re.search(str.encode('It\'s just you.'), resp, re.DOTALL):
-            state = 'UP'
-        else:
-            state = 'DOWN'
-        return state
-
-    def deny_command(self, channel, sender):
-        self.send_message(channel, 'You cant afford this love')
-
-if __name__ == '__main__':
-    bot = Bottly(SERVER, PORT, NICK, ADMINS, TRIGGER)
+if __name__ == "__main__":
+    bot = Bottly(server, port, nick, trusted, admins, trigger, response)
     bot.connect_server()
     bot.register_nick()
 
-    for channel in CHANNEL:
+    for channel in channels:
         bot.join_channel(channel)
 
     while 1:
         data = bot.get_data()
-        if len(data) == 0:
-            break
-        bot.check_input(data)
 
     bot.disconnect_server()
