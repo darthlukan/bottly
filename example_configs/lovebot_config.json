@@ -9,6 +9,7 @@
     "BotNick": "LoveBot",
     "Trigger": "~",
     "LogDir": "log",
+    "LogFile": "logger",
     "Responses": {
         "quit": "Love you long time!",
         "leave": "Pure Alabama Blacksnack",
