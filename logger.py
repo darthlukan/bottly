@@ -9,8 +9,13 @@ def log_setup():
     logger = logging.getLogger('myapp')
     if not os.path.exists(base_dir + "/log/"):
         os.makedirs(base_dir + "/log/")
-        if not os.path.exists(base_dir + "/log/command.log"):
-            hdlr = logging.FileHandler(base_dir + "/log/command.log", 'w')
+    else:
+        pass
+    if not os.path.exists(base_dir + "/log/command.log"):
+        hdlr = logging.FileHandler(base_dir + "/log/command.log", 'w')
+    else:
+        pass
+    hdlr = logging.FileHandler(base_dir + "/log/command.log")
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
     hdlr.setFormatter(formatter)
     logger.addHandler(hdlr)
