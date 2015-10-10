@@ -308,8 +308,7 @@ class Bottly(object):
                 elif "uptime" == command:
                     message = self.uptime(self.start_time)
                 else:
-                    message = response["commandNotFound"]
-        
+                    message = response["commandNotFound"] 
 
         if self.autotiny:
             print("self.autotiny")
