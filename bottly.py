@@ -2,9 +2,9 @@ import datetime
 import json
 import socket
 import re
+import requests
 import time
 
-from urllib import urlopen
 
 import utils
 import db as database
@@ -163,8 +163,8 @@ class Bottly(object):
         return self.response["no_mail"]
 
     def isup(self, url):
-        resp = urlopen("http://www.isup.me/%s" % url).read()
-        if re.search(str.encode("It's just you."), resp, re.DOTALL):
+        resp = requests.get("http://www.isup.me/%s" % url)
+        if re.search("It's just you.", resp.text, re.DOTALL):
             return self.response["isup_up"]
         return self.response["isup_down"]
 
@@ -183,7 +183,8 @@ class Bottly(object):
 
     def tinyurl(self, destination, url):
         try:
-            short_url = urlopen("http://tinyurl.com/api-create.php?url=%s" % url).read().decode()
+            payload = {'url': url}
+            short_url = requests.get("http://tinyurl.com/api-create.php", params=payload).text
             if len(short_url) < len(url):
                 return self.response["tiny_success"] + ' ' + short_url
             elif len(url) < len(short_url):
@@ -275,6 +276,8 @@ class Bottly(object):
                 self.mail(destination, mail, user)
             else:
                 message = self.usage("mail")
+        elif "tiny" == command:
+            message = self.tinyurl(destination, arg[0])
         elif "uptime" == command:
             message = self.uptime(self.start_time)
         else:
@@ -282,31 +285,13 @@ class Bottly(object):
 
         return message
 
-    def check_tiny(self, command, destination, user, arg):
+    def auto_commands(self, command, destination, usr, arg):
         message = ""
-        if self.autotiny:
-            print("self.autotiny")
-            print("%s %s %s" % (user, command, arg))
-            if "tiny" == command:
-                if len(arg) == 1:
-                    url = arg[0]
+        if not command and isinstance(arg, list):
+            for item in arg:
+                if "http" in item:
+                    url = item
                     message = self.tinyurl(destination, url)
-                else:
-                    message = self.usage("tiny")
-            else:
-                if isinstance(arg, list):
-                    for item in arg:
-                        if "http" in item:
-                            url = item
-                            message = self.tinyurl(destination, url)
-        else:
-            print("not self.autotiny")
-            if "tiny" == command:
-                if len(arg) == 1:
-                    url = arg[0]
-                    message = self.tinyurl(destination, url)
-                else:
-                    message = self.usage("tiny")
         return message
 
     def command_filter(self, user, msg_type, destination, command, arg):
@@ -314,6 +299,7 @@ class Bottly(object):
             trig_pass, command = self.trigger_check(command)
         else:
             trig_pass = False
+            message = self.auto_commands(command, destination, user, arg)
 
         if trig_pass:
             log(self.logger, user, msg_type, destination, command, arg)
@@ -325,8 +311,6 @@ class Bottly(object):
 
             if not self.hushed:
                 message = self.user_commands(command, destination, user, arg)
-
-        message = self.check_tiny(command, destination, user, arg)
 
         try:
             utils.pretty_print(self.nick, msg_type, destination, message)
