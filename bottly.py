@@ -313,8 +313,8 @@ class Bottly(object):
             if not self.hushed:
                 message = self.user_commands(command, destination, user, arg)
 
-        utils.pretty_print(self.nick, msg_type, destination, message)
-        if message is not None:
+        if len(message) > 0:
+            utils.pretty_print(self.nick, msg_type, destination, message)
             if isinstance(message, tuple):
                 for line in message:
                     self.send_message(destination, line)
