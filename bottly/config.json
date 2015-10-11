@@ -1,5 +1,5 @@
 {
-    "DEBUG": "False",
+    "DEBUG": false,
     "Admins": ["kekler"],
     "Trusted": [],
     "Server": "irc.freenode.net",
@@ -24,7 +24,8 @@
         "autotiny_off": "AutoTiny turned on..",
         "isup_up": "It's just you!",
         "isup_down":"It's not just you!",
-        "deny": "You're not authorized to run that command!"
+        "deny": "You're not authorized to run that command!",
+        "commandNotFound": "Invalid Command"
     }
 }
 
