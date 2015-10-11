@@ -8,7 +8,7 @@ bot-tly - Up your class with Butler bottly in your IRC Channel
 
 Get the source code from GitHub:
 
-     git clone git@github.com:ingydotnet/git-hub
+     git clone github.com/kekler/bottly
 
 Then run:
 
