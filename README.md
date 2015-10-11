@@ -8,11 +8,16 @@ bot-tly - Up your class with Butler bottly in your IRC Channel
 
 Get the source code from GitHub:
 
-     git clone github.com/kekler/bottly
+    git clone github.com/kekler/bottly
+    cd bottly
 
-Then run:
+Then install the required python modules:
 
-    python bottly/bottly.py     # possibly 'python3'
+    pip install -r requirements.txt
+
+Then start bottly:
+
+    python bottly/main.py     # possibly 'python3'
 
 ## COMMANDS
 
@@ -20,10 +25,10 @@ These are the commands you can use to interact with bottly.
 
 ### Admin Only
 
-**_join <channel>_**
+**_join &lt;channel&gt;_**
     Joins a specific channel.
 
-**_leave [<channel>]_**
+**_leave [&lt;channel&gt;]_**
     Leaves a specific channel. Leave defaults to the channel the command was issued in.
 
 **_quit_**
@@ -54,16 +59,16 @@ These are the commands you can use to interact with bottly.
 **_foo_**
     Simple command that returns "foo" mainly for testing purposes.
 
-**_mail <user> <message>..._**
+**_mail &lt;user&gt; &lt;message&gt;..._**
     Create a new message for bottly to deliver next time the user is online.
 
 **_checkmail_**
     Returns recent messages bottly has waiting for you.
 
-**_isup  <url>_**
+**_isup  &lt;url&gt;_**
     Returns whether a URL is up or down.
 
-**_tiny <url>_**
+**_tiny &lt;url&gt;_**
     Returns a shortened URL using TinyURL, useful for when bottly's automatic URL shortener is turned off
 
 **_uptime_**
@@ -123,7 +128,7 @@ Configurations are located in 'config.json' in the root folder of the project.
 
 ## Author
 
-Written by Andrew Dulle <k3kl3r@gmail.com>
+Written by Andrew Dulle &lt;k3kl3r@gmail.com&gt;
 
 ## Status
 
@@ -131,4 +136,6 @@ This IRC Bot is in constant development. Being a side project, development will 
 
 Find __bottly__ on irc.freenode.net, we're both in #nixheads if  you have any questions or ideas.
 
+## LICENSE
 
+See the [LICENSE](LICENSE) file for rights and limitations (MIT).
