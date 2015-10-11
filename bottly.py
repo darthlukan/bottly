@@ -99,7 +99,7 @@ class Bottly(object):
                 user = self.get_user(data[0])
                 msg_type = data[1]
                 destination = data[2]
-                try:
+                if len(data) >= 4:
                     message = data[3:]
                     message[0] = message[0][1:]
                     utils.pretty_print(user, msg_type, destination, message)
@@ -108,7 +108,7 @@ class Bottly(object):
                         message = message[1:]
                     else:
                         command = None
-                except IndexError:
+                else:
                     command = None
                     message = None
                 self.check_input(user, msg_type, destination, command, message)
@@ -182,15 +182,15 @@ class Bottly(object):
         return False, self.response["hush_off"]
 
     def tinyurl(self, destination, url):
-        try:
-            payload = {'url': url}
-            short_url = requests.get("http://tinyurl.com/api-create.php", params=payload).text
+        payload = {'url': url}
+        resp = requests.get("http://tinyurl.com/api-create.php", params=payload)
+        if resp.status_code == 200:
+            short_url = resp.text
             if len(short_url) < len(url):
                 return self.response["tiny_success"] + ' ' + short_url
             elif len(url) < len(short_url):
                 return self.response["tiny_short"]
-        except:
-            return self.response["tiny_failure"]
+        return self.response["tiny_failure"]
 
     def uptime(self, start_time):
         end_time = time.time()
@@ -295,6 +295,7 @@ class Bottly(object):
         return message
 
     def command_filter(self, user, msg_type, destination, command, arg):
+        message = None
         if command is not None:
             trig_pass, command = self.trigger_check(command)
         else:
@@ -312,16 +313,13 @@ class Bottly(object):
             if not self.hushed:
                 message = self.user_commands(command, destination, user, arg)
 
-        try:
-            utils.pretty_print(self.nick, msg_type, destination, message)
-            if message is not None:
-                if isinstance(message, tuple):
-                    for line in message:
-                        self.send_message(destination, line)
-                else:
-                    self.send_message(destination, message)
-        except UnboundLocalError:
-            pass
+        utils.pretty_print(self.nick, msg_type, destination, message)
+        if message is not None:
+            if isinstance(message, tuple):
+                for line in message:
+                    self.send_message(destination, line)
+            else:
+                self.send_message(destination, message)
 
 
 if __name__ == "__main__":
