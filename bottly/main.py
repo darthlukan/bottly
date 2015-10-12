@@ -102,7 +102,7 @@ class Bottly(object):
                 if len(data) >= 4:
                     message = data[3:]
                     message[0] = message[0][1:]
-                    if message[0] is self.trigger:
+                    if message[0].startswith(self.trigger):
                         command = message[0]
                         message = message[1:]
                     else:
@@ -312,7 +312,7 @@ class Bottly(object):
             if not self.hushed:
                 message = self.user_commands(command, destination, user, arg)
 
-        if message is not None:
+        if len(message) > 0:
             utils.pretty_print(self.nick, msg_type, destination, message)
             if isinstance(message, tuple):
                 for line in message:
