@@ -5,7 +5,6 @@ import re
 import requests
 import time
 
-
 import utils
 import db as database
 from logger import log_setup, log
@@ -91,6 +90,7 @@ class Bottly(object):
 
     def analyze_data(self, data):
         data = utils.bytes_to_unicode(data)
+        print(data)
         data = data.split()
         if len(data) > 1:
             if data[0] in "PING":
@@ -102,8 +102,7 @@ class Bottly(object):
                 if len(data) >= 4:
                     message = data[3:]
                     message[0] = message[0][1:]
-                    utils.pretty_print(user, msg_type, destination, message)
-                    if message[0][0] is self.trigger:
+                    if message[0].startswith(self.trigger):
                         command = message[0]
                         message = message[1:]
                     else:

@@ -9,4 +9,4 @@ def unicode_to_bytes(data):
 def pretty_print(user, msg_type, destination, message):
     if isinstance(message, list):
         message = " ".join(message)
-    print("%s %s %s :%s" % (user, msg_type, destination, message))
+    print("%s %s %s :%s \n" % (user, msg_type, destination, message))

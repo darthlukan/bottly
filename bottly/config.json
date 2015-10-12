@@ -1,5 +1,5 @@
 {
-    "DEBUG": false,
+    "DEBUG": true,
     "Admins": ["kekler"],
     "Trusted": [],
     "Server": "irc.freenode.net",
