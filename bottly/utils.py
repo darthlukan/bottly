@@ -1,5 +1,5 @@
 def bytes_to_unicode(data):
-        return data.decode("UTF-8")
+    return data.decode("UTF-8")
 
 
 def unicode_to_bytes(data):
