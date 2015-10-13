@@ -82,7 +82,7 @@ Configurations are located in 'config.json' in the root folder of the project.
     True | False - Turns debugging mode on or off.
 
 **_Admins_**
-    Defines a list of nicks which have adminstrative access.
+    Defines a list of nicks which have administrative access.
 
 **_Trusted_**
     Defines a list of  nicks which have trusted access (think superuser).
@@ -123,7 +123,7 @@ Configurations are located in 'config.json' in the root folder of the project.
     autotiny_on: Message displayed when automatic URL shortener is activated
     autotiny_off: Message displayed when automatic URL shortener is deactivated
     isup_up: Message displayed when URL is working
-    isup_down: Message displayed when URL is inaccessable
+    isup_down: Message displayed when URL is inaccessible
     deny: Message displayed when user tries to run elevated commands
 
 ## Author
